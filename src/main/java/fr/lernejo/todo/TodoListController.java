@@ -7,21 +7,27 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class TodoListController {
-    private final static List<Todo> todos = new ArrayList<Todo>();
+    private TodoRepository repository = null;
+
+
+    public TodoListController(TodoRepository todoRepository){
+        this.repository = todoRepository;
+    }
 
     @GetMapping("/api/todo")
-    public ResponseEntity<List<Todo>> getTodos() {
-        return new ResponseEntity<List<Todo>>(todos, HttpStatus.OK);
+    public ResponseEntity<Iterable<TodoEntity>> getTodos() {
+        return new ResponseEntity<>(this.repository.findAll(), HttpStatus.OK);
     }
     @PostMapping(value = "/api/todo", consumes = {"application/json"})
-    public ResponseEntity<Todo> addTodo(@RequestBody Todo todo) {
-        todos.add(todo);
-        return new ResponseEntity<Todo>(todo, HttpStatus.CREATED);
+    public ResponseEntity<TodoEntity> addTodo(@RequestBody Todo todo) {
+        TodoEntity todoEntity = new TodoEntity();
+        todoEntity.message = todo.message();
+        todoEntity.author = todo.author();
+        return new ResponseEntity<TodoEntity>(repository.save(todoEntity), HttpStatus.CREATED);
     }
 
 
